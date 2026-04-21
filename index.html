@@ -1,0 +1,220 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Study Point</title><!-- Font Awesome --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"><style>
+:root {
+    --bg-color: #0b0f19;
+    --card-bg: #151e32;
+    --gold: #ffd700;
+    --text-color: #f8fafc;
+    --accent-blue: #3b82f6;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 5%;
+    background: #020617;
+}
+
+.logo {
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.container {
+    padding: 20px 5%;
+}
+
+.card {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 10px 15px;
+    background: var(--accent-blue);
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Secret Admin Button */
+#secretAdminBtn {
+    position: fixed;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #444;
+    font-size: 10px;
+}
+
+/* Admin Panel */
+#adminPanel {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.9);
+    padding: 20px;
+    overflow: auto;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+iframe {
+    width: 100%;
+    height: 500px;
+    border: none;
+}
+
+.video-thumb {
+    width: 100%;
+    max-width: 400px;
+    cursor: pointer;
+}
+</style></head><body><nav>
+<div class="logo">
+<i class="fas fa-graduation-cap"></i>
+English Study Point
+</div>
+</nav><div class="container"><!-- PDF Reader Section --><div class="card">
+<h2>PDF Reader (Download Disabled)</h2>
+<iframe id="pdfViewer" src=""></iframe>
+</div><!-- Video Section --><div class="card">
+<h2>Video Section</h2>
+<img id="videoThumbnail" class="video-thumb" src="" onclick="playVideo()">
+<div id="videoPlayer"></div>
+</div><!-- Blog Section --><div class="card">
+<h2>Study Articles (Blog)</h2>
+<div id="blogContent">
+Welcome to Study Articles. Admin can update content here.
+</div>
+</div><!-- About Section --><div class="card">
+<h2>About Us</h2>
+<div id="aboutContent">
+Write about your website here.
+</div>
+</div></div><!-- Secret Admin Button --><button id="secretAdminBtn" onclick="openLogin()">.</button>
+
+<!-- Admin Panel --><div id="adminPanel">
+<h2>Admin Login</h2><div id="loginBox">
+<input type="text" id="adminId" placeholder="Enter ID">
+<input type="password" id="adminPassword" placeholder="Enter Password">
+<button onclick="loginAdmin()">Login</button>
+</div><div id="dashboard" style="display:none;"><h2>Admin Dashboard</h2><h3>Upload PDF</h3>
+<input type="text" id="pdfLink" placeholder="Paste PDF link">
+<button onclick="updatePDF()">Update PDF</button><h3>Add Video</h3>
+<input type="text" id="videoLink" placeholder="Paste YouTube link">
+<button onclick="updateVideo()">Update Video</button><h3>Update About</h3>
+<textarea id="aboutText"></textarea>
+<button onclick="updateAbout()">Update About</button><h3>Write Blog</h3>
+<textarea id="blogText"></textarea>
+<button onclick="updateBlog()">Publish Blog</button><button onclick="closeAdmin()">Close Panel</button>
+
+</div></div><!-- Firebase --><script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script><script>
+
+/* Firebase Config */
+// === YAHI MERGE / PASTE KARNE KI JAGAH HAI ===
+// Firebase console se jo config mile, use yahan replace karein
+const firebaseConfig = {
+apiKey: "AIzaSyCnVe4erOFMnf_MR_e9c6XF_g5851Rw1Ng",
+ authDomain: "englishstudypoint.firebaseapp.com",
+ databaseURL: "https://englishstudypoint-default-rtdb.asia-southeast1.firebasedatabase.app",
+ projectId: "englishstudypoint",
+ storageBucket: "englishstudypoint.firebasestorage.app",
+ messagingSenderId: "964608179043",
+ appId: "1:964608179043:web:8d74dd07987a3986e8b156",
+ measurementId: "G-7X7N44XLTC",
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* Secret Admin Login */
+const ADMIN_ID = "admin";
+const ADMIN_PASS = "12345";
+
+function openLogin() {
+document.getElementById("adminPanel").style.display = "block";
+}
+
+function loginAdmin() {
+let id = document.getElementById("adminId").value;
+let pass = document.getElementById("adminPassword").value;
+
+if (id === ADMIN_ID && pass === ADMIN_PASS) {
+document.getElementById("loginBox").style.display = "none";
+document.getElementById("dashboard").style.display = "block";
+} else {
+alert("Wrong ID or Password");
+}
+}
+
+function closeAdmin() {
+document.getElementById("adminPanel").style.display = "none";
+}
+
+/* PDF Update */
+function updatePDF() {
+let link = document.getElementById("pdfLink").value;
+document.getElementById("pdfViewer").src = link;
+db.ref("pdf").set(link);
+}
+
+/* Video Update */
+function updateVideo() {
+let link = document.getElementById("videoLink").value;
+let videoId = link.split("v=")[1];
+let thumbnail = "https://img.youtube.com/vi/" + videoId + "/0.jpg";
+
+document.getElementById("videoThumbnail").src = thumbnail;
+document.getElementById("videoThumbnail").setAttribute("data-video", videoId);
+
+db.ref("video").set(link);
+}
+
+function playVideo() {
+let videoId = document.getElementById("videoThumbnail").getAttribute("data-video");
+let iframe = '<iframe width="100%" height="400" src="https://www.youtube.com/embed/' + videoId + '" allowfullscreen></iframe>';
+
+document.getElementById("videoPlayer").innerHTML = iframe;
+}
+
+/* About Update */
+function updateAbout() {
+let text = document.getElementById("aboutText").value;
+document.getElementById("aboutContent").innerText = text;
+db.ref("about").set(text);
+}
+
+/* Blog Update */
+function updateBlog() {
+let text = document.getElementById("blogText").value;
+document.getElementById("blogContent").innerText = text;
+db.ref("blog").set(text);
+}
+
+</script></body>
+</html>
